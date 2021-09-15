@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./build/helloworld
+./build/BIM2SE

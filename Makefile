@@ -10,3 +10,5 @@ generate:
 clean:
 	@echo "Removing the build directory..."
 	rm -rf ./build
+	rm *.stl
+	rm *.stp

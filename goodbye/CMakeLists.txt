@@ -1,1 +1,0 @@
-ADD_LIBRARY(goodbye main.cpp)

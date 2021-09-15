@@ -1,0 +1,1 @@
+ADD_LIBRARY(sandbox main.cpp)

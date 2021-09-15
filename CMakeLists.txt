@@ -10,19 +10,19 @@ IF(WIN32)
 ENDIF()
 
 # The name of our program
-PROJECT(helloworld VERSION 0.1)
+PROJECT(BIM2SE VERSION 0.1)
 
 # Set some variables for later use or
 # include inside the binaries
 SET(AUTHOR "Gilles Trenson")
 
-# Add an optional "Goodbye"
-OPTION(USE_GOODBYE "Say goodbye" ON)
+# Add an optional "sandbox"
+OPTION(USE_SANDBOX "Enable sandbox / playground mode" ON)
 
 # Configure a header that will be used
 # to insert the version number indide our
 # program and possibly other vars as well
-CONFIGURE_FILE(hello.h.in hello.h)
+CONFIGURE_FILE(BIM2SE.h.in BIM2SE.h)
 
 # Specify search path for modules, semicolon-seperated list
 # SET(OpenCASCADE_DIR "/tmp/occt/")
@@ -92,19 +92,19 @@ ELSE()
 ENDIF()
 
 
-# If option goodbye is set
-IF(USE_GOODBYE)
+# If option USE_SANDBOX is set
+IF(USE_SANDBOX)
     # Add a library in a subfolder
-    ADD_SUBDIRECTORY(goodbye)
+    ADD_SUBDIRECTORY(sandbox)
     # Append the name of the library to a list
-    list(APPEND EXTRA_LIBS goodbye)
+    list(APPEND EXTRA_LIBS sandbox)
     # Append the location of the header files of the library
-    list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/goodbye")
+    list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/sandbox")
 ENDIF()
 
 # Add out executable - using variables to 
 # refer to our ${PROJECT_NAME}
-ADD_EXECUTABLE(${PROJECT_NAME} hello.cpp) 
+ADD_EXECUTABLE(${PROJECT_NAME} BIM2SE.cpp) 
 
 # Add the location src files
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC
