@@ -61,6 +61,8 @@
 #include <GProp_GProps.hxx>
 #include <BRepGProp.hxx>
 
+#include <TopoDS_Iterator.hxx>
+
 // Type definitions
 typedef NCollection_Array2<gp_Pnt> ListOfPoints; // the same as TColgp_Array2OfPnt
 
@@ -68,6 +70,19 @@ typedef NCollection_Array2<gp_Pnt> ListOfPoints; // the same as TColgp_Array2OfP
 #ifdef USE_SANDBOX
 #   include <sandbox.h>
 #endif
+
+/*
+  Split a shape into multiple subshapes
+*/
+// Inspiration https://github.com/bigOrange123456789/PYTHON/blob/ede1c2eb83309594577aa565e14c3b67e3e97ef4/ifc/IfcOpenShell-0.6.0/src/ifcgeom/IfcGeomFunctions.cpp
+TopTools_ListOfShape BIM2SE_SubShape(const TopoDS_Shape& in) {
+    TopTools_ListOfShape out;
+		TopoDS_Iterator shapeIterator(in);
+		for (; shapeIterator.More(); shapeIterator.Next()) {
+			out.Append(shapeIterator.Value());
+		}
+    return out;
+}
 
 int main(int argc, char *argv[])
 {
@@ -208,28 +223,20 @@ int main(int argc, char *argv[])
       TopoDS_Shape test123Export = meshedTest123.Shape();
       STLwriter.Write(test123Export, "test123.stl");
 
-      // Retrieve the geometry
-      // Inspiration : https://github.com/trelau/AFEM/commit/08fbad73a9b21dae2ed5c44d6971c98af580157a
-      TopTools_ListOfShape slices = splitter.Modified(boxWithHole);
+      // Split the geometry in individual parts
+      TopTools_ListOfShape subShape = BIM2SE_SubShape(test123);
 
-      if(not slices.IsEmpty())
+      int i = 1;
+      std::string result;
+      for(TopTools_ListIteratorOfListOfShape it(subShape); it.More(); it.Next(), ++i)
       {
-        std::cout << "Geometry has been sliced!!" << std::endl;
-
-        if(splitter.HasModified())
-          std::cout << "Shapes have been modified" << std::endl;
-        if(splitter.HasGenerated())
-          std::cout << "Shapes have been generated" << std::endl;
-        if(splitter.HasDeleted())
-          std::cout << "Shapes have been deleted" << std::endl;
-
-        TopoDS_Shape slice1 = slices.First();
-
-        // Slice 1 - Export
-        BRepMesh_IncrementalMesh meshedSlice1 (slice1, 1e-2, Standard_True);
-        TopoDS_Shape Slice1Export = meshedSlice1.Shape();
-        STLwriter.Write(Slice1Export, "slice1.stl");
+        // Write the face (soilSurface) to a file
+        result = "current" + std::to_string(i) + ".stl";
+        BRepMesh_IncrementalMesh geom (it.Value(), 1e-2, Standard_True);
+        TopoDS_Shape geomExport = geom.Shape();
+        STLwriter.Write(geomExport, result.c_str());
       }
+
     }
     
     // Write the face (soilSurface) to a file
