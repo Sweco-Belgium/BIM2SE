@@ -33,7 +33,7 @@ WIP
 
 ## OUTPUT
 
-WIP
+The output are both `.stl` files as `.stp` *STEP* files. The first one is a very simple geometry. It's represented by a meshed geometry and is not that accurate, but this is not an issue regarding the soil volume calculations.
 
 # Installation
 

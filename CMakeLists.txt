@@ -1,6 +1,9 @@
 # The cmake version - preferably = `cmake --version`
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
+# Author message
+MESSAGE(STATUS "(C) Gilles Trenson")
+
 # Check if it's a Windows
 IF(WIN32)
     MESSAGE(STATUS "It's a Windows... Good luck fellas")

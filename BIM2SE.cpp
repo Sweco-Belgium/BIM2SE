@@ -51,7 +51,7 @@
 // ShapeBuild_ReShape - part of the TKShHealing toolkit
 #include <ShapeBuild_ReShape.hxx>
 
-// Writa a STL file
+// Writa a STL file - tessellated format (triangulation)
 #include <StlAPI_Writer.hxx>
 
 // Write a STEPfile
@@ -65,6 +65,7 @@
 
 // Type definitions
 typedef NCollection_Array2<gp_Pnt> ListOfPoints; // the same as TColgp_Array2OfPnt
+// https://3dinsider.com/stl-vs-obj/
 
 // Include goodbye if set
 #ifdef USE_SANDBOX
@@ -164,6 +165,7 @@ int main(int argc, char *argv[])
       TopoDS_Shape shape3 = sectionMaker.Shape2();
       TopTools_ListOfShape aListOfShape = sectionMaker.Tools();
 
+      STEPControl_Writer STEPwriter;
       STEPwriter.Transfer(shape1, STEPControl_AsIs);
       STEPwriter.Write("shape1.stp");
 
@@ -216,6 +218,7 @@ int main(int argc, char *argv[])
       TopoDS_Shape test123 = splitter.Shape();
       
       // Write a STEP file
+      STEPControl_Writer STEPwriter;
       STEPwriter.Transfer(test123, STEPControl_AsIs);
       STEPwriter.Write("test123.stp");
 
@@ -228,19 +231,33 @@ int main(int argc, char *argv[])
       TopTools_ListOfShape subShape = BIM2SE_SubShape(test123);
 
       int i = 1;
-      std::string result;
+      std::string filename;
+      GProp_GProps volumeProp;
       for(TopTools_ListIteratorOfListOfShape it(subShape); it.More(); it.Next(), ++i)
       {
         // Write the face (soilSurface) to a file
-        result = "current" + std::to_string(i) + ".stl";
+        filename = "slice" + std::to_string(i);
+        // Write a STEP file
+        STEPControl_Writer STEPwriter;
+        STEPwriter.Transfer(it.Value(), STEPControl_AsIs);
+        STEPwriter.Write((filename + ".stp").c_str());
+        // Write a STL file
         BRepMesh_IncrementalMesh geom (it.Value(), 1e-2, Standard_True);
         TopoDS_Shape geomExport = geom.Shape();
-        STLwriter.Write(geomExport, result.c_str());
+        STLwriter.Write(geomExport, (filename + ".stl").c_str() );
+
+        // Calculate the volume
+        BRepGProp::VolumeProperties(it.Value(), volumeProp);
+        std::cout << std::setprecision(5) << "Volume of the model '" << filename << "' is equal to " << volumeProp.Mass() << std::endl;
       }
 
+      // Calculate the totale volume
+      BRepGProp::VolumeProperties(boxWithHole, volumeProp);
+      std::cout << std::setprecision(5) << "Total volume 'boxWithHole' is equal to " << volumeProp.Mass() << std::endl;
     }
     
     // Write the face (soilSurface) to a file
+    STEPControl_Writer STEPwriter;
     STEPwriter.Transfer(soilSurface, STEPControl_AsIs);
     STEPwriter.Write("soilSurface.stp");
     // Write to an .stl file - First create a meshed surface
@@ -249,6 +266,7 @@ int main(int argc, char *argv[])
     STLwriter.Write(soilSurfaceForExport, "soilSurface.stl");
   } else {
     // If no surface is created, we write the original geometry
+    STEPControl_Writer STEPwriter;
     STEPwriter.Transfer(boxWithHole, STEPControl_AsIs);
     STEPwriter.Write("originalGeometry.stp"); 
     // To write an STL file, we first need to mesh our geometry 
