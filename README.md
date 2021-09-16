@@ -1,4 +1,41 @@
-# OCCT Sandbox
+# POC - BIM2SE
+
+> BIM to System Engineering
+
+Aim for this Proof Of Concept is to examine if soil volumes can be calculated on an automatic fashion. Currently the workflow works with soil surfaces, but it could also work with HalfSpaces. 
+
+## INPUT
+
+The input data exists of the following files:
+
+```bash
+assets/obj/BIM model.json   # Object properties definition
+assets/obj/BIM model.obj    # Object geometry definition
+assets/obj/hybride grondmodel.db    # Soil model properties definition
+assets/obj/hybride grondmodel.json  # Soil model properties definition
+assets/obj/hybride grondmodel.obj   # Soil model geometry definition 
+```
+
+<img src="./assets/img/model_overview.png"/>
+
+The files are exported from BIM360 using the ***Autodesk Forge API**.
+
+### Coordinate system 
+
+The coordinate system is different for the models. To move them to the location according EPSG:31370, the following translation is necesarry for the `BIM model.obj`:
+
+- **X-translation** = 153700 (m)
+- **Y-translation** = 214700 (m)
+
+## PROCESSING
+
+WIP
+
+## OUTPUT
+
+WIP
+
+# Installation
 
 Open Cascade Technology (OCCT) Sandbox. Place to play around with the API.
 
