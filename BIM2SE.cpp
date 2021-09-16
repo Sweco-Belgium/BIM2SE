@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
 
     if(splitter.IsDone())
     {
+      // see also https://github.com/bigOrange123456789/PYTHON/blob/ede1c2eb83309594577aa565e14c3b67e3e97ef4/ifc/IfcOpenShell-0.6.0/src/ifcgeom/IfcGeomFunctions.cpp
       std::cout << "Slicer activated... (see FreeCAD Part Slice)" << std::endl;
 
       TopoDS_Shape test123 = splitter.Shape();
