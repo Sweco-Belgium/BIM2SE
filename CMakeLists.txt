@@ -119,6 +119,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC
     TKSTEP
     TKSTL
     TKMesh
+    TKShHealing
 )
 
 # The configure file will be read in the 
