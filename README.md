@@ -33,6 +33,8 @@ Geometry is first converted from `.obj` files to `.stl` files. In this process, 
 
 Currently, we rely on **FME** to do the data transformation. A script could be running on the **FME** server to do this transformation on the fly. I have the following process in mind.
 
+DANGER: During translation with **FME**, the geometry moved?! 
+
 During processing we're creating these files:
 ```bash
 assets/obj/BIM model.stl    # Object geometry definition
@@ -47,7 +49,7 @@ Another approach would be to write everything in Python. Currently everything is
 
 We stumbled upon the following issues:
 - Open Cascade is made to work with *BRep* data - you can read more about the difference with *meshes* [here](https://www.shapediver.com/blog/shapediver-basics-meshes-vs-b-reps-explained)
-- By converting the *meshes* back to *BRep's*, the process is extremely slow. It takes an hour to convert the data.
+- By converting the *meshes* back to *BRep's*, the process is extremely slow. It takes a very long time to convert the data.
 
 ## OUTPUT
 
