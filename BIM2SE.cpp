@@ -21,6 +21,7 @@
 
 // Retrieve type descriptor -> STANDARD_TYPE(Geom_Line) for example
 #include <gp_Pnt.hxx> // Point - short lived
+#include <gp_Trsf.hxx> // Transformation
 #include <NCollection_Array2.hxx> // To define 2D Arrays
 #include <TColgp_Array2OfPnt.hxx> 
 
@@ -44,6 +45,7 @@
 // BRepBuilderAPI package - part of the TKTopAlgo toolit
 #include <BRepBuilderAPI_MakeFace.hxx> // Build a face from a surface
 #include <BRepBuilderAPI_MakePolygon.hxx> // Build a polygon
+#include <BRepBuilderAPI_Transform.hxx> // Transformation
 
 // BRepAlgoAPI package - part of TKBO toolkit
 #include <BRepAlgoAPI_Cut.hxx>
@@ -70,7 +72,10 @@
 #include <GProp_GProps.hxx>
 #include <BRepGProp.hxx>
 
+// TopoDS package - part of the TKBRep toolkit
 #include <TopoDS_Iterator.hxx>
+#include <TopoDS_Compound.hxx>
+#include <TopoDS_Builder.hxx>
 
 // Type definitions
 typedef NCollection_Array2<gp_Pnt> ListOfPoints; // the same as TColgp_Array2OfPnt
@@ -128,6 +133,20 @@ TopoDS_Shape BIM2SE_ReadSTL(const char *filename)
   return BRepModel;
 }
 
+/*
+  Write an STL file
+*/
+void BIM2SE_WriteSTL(const TopoDS_Shape& shape, const char *filename)
+{
+  // Start the writer
+  StlAPI_Writer STLwriter;
+  // Mesh the object
+  BRepMesh_IncrementalMesh meshedShape (shape, 1e-2, Standard_True);
+  TopoDS_Shape meshedShapeExport = meshedShape.Shape();
+  // Write the STL file
+  STLwriter.Write(meshedShapeExport, filename);
+}
+
 int main(int argc, char *argv[])
 {
   // Introduction
@@ -161,10 +180,22 @@ int main(int argc, char *argv[])
   TopoDS_Shape BIMmodel = BIM2SE_ReadSTL("assets/obj/BIM model.stl");
   TopoDS_Shape grondModel = BIM2SE_ReadSTL("assets/obj/hybride grondmodel.stl");
 
-  // Write to a STL file (STEP was 358mb!!!)
-  BRepMesh_IncrementalMesh meshedBIMmodel (BIMmodel, 0.05, Standard_True);
-  TopoDS_Shape BIMmodelExport = meshedBIMmodel.Shape();
-  STLwriter.Write(BIMmodelExport, "BIM model.stl");
+  // Translate the BIMmodel
+  gp_Trsf translateBIMmodel;
+  translateBIMmodel.SetTranslation(gp_Pnt(0,0,0), gp_Pnt(153700, 214700,0));
+  // Execute the translation
+  BRepBuilderAPI_Transform BIMmodelTranslated(BIMmodel, translateBIMmodel);
+  TopoDS_Shape BIMmodelFixed = BIMmodelTranslated.Shape(); 
+
+  // Combine the models and write to a file
+  TopoDS_Compound combined;
+  TopoDS_Builder aBuilder;
+  aBuilder.MakeCompound(combined);
+  aBuilder.Add(combined, grondModel);
+  aBuilder.Add(combined, BIMmodelFixed);
+
+  // Write the compound file
+  BIM2SE_WriteSTL(combined, "combined.stl");
 
   /*
     In[2]: Define a surface using 4 points - approximate 

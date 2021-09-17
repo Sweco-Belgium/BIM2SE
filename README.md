@@ -29,11 +29,31 @@ The coordinate system is different for the models. To move them to the location 
 
 ## PROCESSING
 
-WIP
+Geometry is first converted from `.obj` files to `.stl` files. In this process, data is lost. We still need to examine what kind of data is lost. 
+
+Currently, we rely on **FME** to do the data transformation. A script could be running on the **FME** server to do this transformation on the fly. I have the following process in mind.
+
+During processing we're creating these files:
+```bash
+assets/obj/BIM model.stl    # Object geometry definition
+assets/obj/hybride grondmodel.stl   # Soil model geometry definition 
+```
+
+> File is updated on BIM360 → *Webhook* send to **FME Server**, tranformation of the model to an `.obj` file is started and a *Webhook* is registered that is called when this transformation is done. This *Webhook* calls another script that is running on the **FME Server**. The script downloads the `.obj` file and converts it to an `.stl` file. Next, a script is called to make the intersection between the file and the soilsurfaces. Volumes are calculated and reattached to the original BIM model.
+
+Another approach would be to write everything in Python. Currently everything is written in `.CPP`, but the ecosystem of Python is much friendlier and we could use more packages to simplify the general inner working. 
+
+### Issues
+
+We stumbled upon the following issues:
+- Open Cascade is made to work with *BRep* data - you can read more about the difference with *meshes* [here](https://www.shapediver.com/blog/shapediver-basics-meshes-vs-b-reps-explained)
+- By converting the *meshes* back to *BRep's*, the process is extremely slow. It takes an hour to convert the data.
 
 ## OUTPUT
 
 The output are both `.stl` files as `.stp` *STEP* files. The first one is a very simple geometry. It's represented by a meshed geometry and is not that accurate, but this is not an issue regarding the soil volume calculations.
+
+Next to the *geometry* files are we also outputting a data format containing the soil volumes for each object. This information should be translated back to the BIM models.
 
 # Installation
 
