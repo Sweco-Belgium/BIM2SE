@@ -39,9 +39,11 @@
 
 // BRepMesh package - part of TKMesh toolkit
 #include <BRepMesh_IncrementalMesh.hxx> // Make a mesh from a topological data structure
+#include <BRepMesh_ModelPostProcessor.hxx> // Make TopoDS_Edge from mesh
 
 // BRepBuilderAPI package - part of the TKTopAlgo toolit
 #include <BRepBuilderAPI_MakeFace.hxx> // Build a face from a surface
+#include <BRepBuilderAPI_MakePolygon.hxx> // Build a polygon
 
 // BRepAlgoAPI package - part of TKBO toolkit
 #include <BRepAlgoAPI_Cut.hxx>
@@ -51,8 +53,15 @@
 // ShapeBuild_ReShape - part of the TKShHealing toolkit
 #include <ShapeBuild_ReShape.hxx>
 
-// Writa a STL file - tessellated format (triangulation)
+// Writa a STL file - tessellated format (triangulation) - part of TKSTL toolkit
 #include <StlAPI_Writer.hxx>
+
+// Read a STL file - tessellated format (triangulation) - part of TKSTL toolkit
+#include <RWStl.hxx>
+
+// Poly package - part of the TKMath toolkit
+#include <Poly_Triangulation.hxx> // Provide triangulation for a surface
+#include <Poly_Triangle.hxx> // Describes a component triangle of a triangulation
 
 // Write a STEPfile
 #include <STEPControl_Writer.hxx>
@@ -85,6 +94,40 @@ TopTools_ListOfShape BIM2SE_SubShape(const TopoDS_Shape& in) {
     return out;
 }
 
+/*
+  Read an STL file and convert it to a BRep
+*/
+// Inspiration https://github.com/ncPUMA/FanucBotGui/blob/951252685621165e97e2f0739a7c73a1e78b77cd/src/ModelLoader/cstlloader.cpp
+TopoDS_Shape BIM2SE_ReadSTL(const char *filename)
+{
+  TopoDS_Shape BRepModel;
+  Handle(Poly_Triangulation) STLModel = RWStl::ReadFile(filename);
+
+  if (not STLModel.IsNull())
+  {
+    BRep_Builder shellBuilder;
+    TopoDS_Shell shell;
+    shellBuilder.MakeShell(shell);
+    for (const Poly_Triangle triangle : STLModel->Triangles())
+    {
+      Standard_Integer index0, index1, index2;
+      // Populate coords in the variables
+      triangle.Get(index0, index1, index2);
+      const gp_Pnt pnt0 = STLModel->Node(index0);
+      const gp_Pnt pnt1 = STLModel->Node(index1);
+      const gp_Pnt pnt2 = STLModel->Node(index2);
+      // Now make a wire and a face for in the BRep model
+      const TopoDS_Wire wire = BRepBuilderAPI_MakePolygon(pnt0, pnt1, pnt2, Standard_True);
+      const TopoDS_Face face = BRepBuilderAPI_MakeFace(wire, Standard_True);
+      // add the face to the shell
+      shellBuilder.Add(shell, face);
+    }
+    BRepModel = shell;
+  }
+
+  return BRepModel;
+}
+
 int main(int argc, char *argv[])
 {
   // Introduction
@@ -110,6 +153,18 @@ int main(int argc, char *argv[])
   // Make the export writers ready
   STEPControl_Writer STEPwriter;
   StlAPI_Writer STLwriter;
+
+  /*
+    In[1]: Read the original geometry and translate the BIM model
+  */ 
+
+  TopoDS_Shape BIMmodel = BIM2SE_ReadSTL("assets/obj/BIM model.stl");
+  TopoDS_Shape grondModel = BIM2SE_ReadSTL("assets/obj/hybride grondmodel.stl");
+
+  // Write to a STL file (STEP was 358mb!!!)
+  BRepMesh_IncrementalMesh meshedBIMmodel (BIMmodel, 0.05, Standard_True);
+  TopoDS_Shape BIMmodelExport = meshedBIMmodel.Shape();
+  STLwriter.Write(BIMmodelExport, "BIM model.stl");
 
   /*
     In[2]: Define a surface using 4 points - approximate 
