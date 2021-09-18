@@ -136,6 +136,18 @@ TopoDS_Shape BIM2SE_ReadSTL(const char *filename)
 }
 
 /*
+  Write an STEP file
+*/
+void BIM2SE_WriteSTEP(const TopoDS_Shape& shape, const char *filename)
+{
+  // Start the writer
+  STEPControl_Writer STEPwriter;
+  // Write the STL file
+  STEPwriter.Transfer(shape, STEPControl_AsIs);
+  STEPwriter.Write(filename);
+}
+
+/*
   Write an STL file
 */
 void BIM2SE_WriteSTL(const TopoDS_Shape& shape, const char *filename)
@@ -179,6 +191,9 @@ int main(int argc, char *argv[])
     In[1]: Read the original geometry and translate the BIM model
   */ 
 
+  // The result are very big models. Might be interesting to 
+  // reduce the amount of meshed by looking for coplaner neirgbouring points
+  // and deleting them. 
   TopoDS_Shape BIMmodel = BIM2SE_ReadSTL("assets/obj/BIM model.stl");
   TopoDS_Shape grondModel = BIM2SE_ReadSTL("assets/obj/hybride grondmodel.stl");
 
@@ -200,7 +215,10 @@ int main(int argc, char *argv[])
     aBuilder.Add(combined, BIMmodelFixed);
 
     // Write the compound file
-    BIM2SE_WriteSTL(combined, "combined.stl");
+    // --> The step file is 3GB in size!
+    // --> the STL file contains strongly deformed geometry, but is smaller in size
+    BIM2SE_WriteSTEP(combined, "combined.stp"); // ca. 360 mb in size!
+    BIM2SE_WriteSTL(combined, "combined.stl"); // ca. 3 Gb in size!
   }
 
   /*
