@@ -128,6 +128,8 @@ TopoDS_Shape BIM2SE_ReadSTL(const char *filename)
       shellBuilder.Add(shell, face);
     }
     BRepModel = shell;
+  } else {
+    std::cout << "the file '" << filename << "' couldn't be found" << std::endl;
   }
 
   return BRepModel;
@@ -180,22 +182,26 @@ int main(int argc, char *argv[])
   TopoDS_Shape BIMmodel = BIM2SE_ReadSTL("assets/obj/BIM model.stl");
   TopoDS_Shape grondModel = BIM2SE_ReadSTL("assets/obj/hybride grondmodel.stl");
 
-  // Translate the BIMmodel
-  gp_Trsf translateBIMmodel;
-  translateBIMmodel.SetTranslation(gp_Pnt(0,0,0), gp_Pnt(153700, 214700,0));
-  // Execute the translation
-  BRepBuilderAPI_Transform BIMmodelTranslated(BIMmodel, translateBIMmodel);
-  TopoDS_Shape BIMmodelFixed = BIMmodelTranslated.Shape(); 
+  if((not BIMmodel.IsNull()) and (not grondModel.IsNull())){
+    std::cout << "Files is loaded" << std::endl;
+    // Translate the BIMmodel
+    gp_Trsf translateBIMmodel;
+    translateBIMmodel.SetTranslation(gp_Pnt(0,0,0), gp_Pnt(153700, 214700,0));
 
-  // Combine the models and write to a file
-  TopoDS_Compound combined;
-  TopoDS_Builder aBuilder;
-  aBuilder.MakeCompound(combined);
-  aBuilder.Add(combined, grondModel);
-  aBuilder.Add(combined, BIMmodelFixed);
+    // Execute the translation
+    BRepBuilderAPI_Transform BIMmodelTranslated(BIMmodel, translateBIMmodel);
+    TopoDS_Shape BIMmodelFixed = BIMmodelTranslated.Shape(); 
 
-  // Write the compound file
-  BIM2SE_WriteSTL(combined, "combined.stl");
+    // Combine the models and write to a file
+    TopoDS_Compound combined;
+    TopoDS_Builder aBuilder;
+    aBuilder.MakeCompound(combined);
+    aBuilder.Add(combined, grondModel);
+    aBuilder.Add(combined, BIMmodelFixed);
+
+    // Write the compound file
+    BIM2SE_WriteSTL(combined, "combined.stl");
+  }
 
   /*
     In[2]: Define a surface using 4 points - approximate 

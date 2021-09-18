@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make -j 4 -C ./build
+make -C ./build
