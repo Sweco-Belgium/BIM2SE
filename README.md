@@ -57,6 +57,12 @@ The output are both `.stl` files as `.stp` *STEP* files. The first one is a very
 
 Next to the *geometry* files are we also outputting a data format containing the soil volumes for each object. This information should be translated back to the BIM models.
 
+### Current progress
+
+Soil intersection is possible using a script, can script can run headless, the process can be activated using webhooks for example. 
+
+<img src="./assets/img/current_progress.jpg"/>
+
 # Installation
 
 Open Cascade Technology (OCCT) Sandbox. Place to play around with the API.
